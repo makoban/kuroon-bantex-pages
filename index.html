@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クルーン検証アプリ | BANTEX</title>
+  <meta name="description" content="クルーン検証アプリは、パチンコのクルーン皿と玉の動きを3Dで観察できるiPhone向け物理シミュレーターです。穴の配置、皿の形、摩擦、反発、玉の大きさなどを調整して挙動を検証できます。">
+  <meta name="keywords" content="クルーン,物理シミュレーション,パチンコ,3D,iPhoneアプリ,検証アプリ,BANTEX">
+  <meta name="author" content="株式会社バンテックス">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kuroon.bantex.jp/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kuroon.bantex.jp/">
+  <meta property="og:title" content="クルーン検証アプリ | BANTEX">
+  <meta property="og:description" content="クルーン皿と玉の動きを3Dで観察できるiPhone向け物理シミュレーター。穴の配置や物理パラメータを調整して挙動を検証できます。">
+  <meta property="og:site_name" content="株式会社バンテックス">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #111827;
+      --muted: #5b6472;
+      --line: #e5e7eb;
+      --surface: #f5f7fa;
+      --brand: #0f172a;
+      --accent: #16a34a;
+      --accent-dark: #15803d;
+      --blue: #2563eb;
+      --white: #fff;
+      --shadow: 0 18px 54px rgba(15, 23, 42, .13);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--white);
+      letter-spacing: 0;
+      line-height: 1.75;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, .92);
+      border-bottom: 1px solid rgba(229, 231, 235, .9);
+      backdrop-filter: blur(14px);
+    }
+    .header-inner {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .site-logo {
+      font-family: Inter, sans-serif;
+      font-weight: 800;
+      letter-spacing: .04em;
+      font-size: 1.2rem;
+    }
+    .primary-nav ul {
+      display: flex;
+      gap: 28px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: .92rem;
+      font-weight: 700;
+    }
+    .primary-nav a:hover { color: var(--ink); }
+
+    .hero {
+      padding: 64px 0 44px;
+      background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+      overflow: hidden;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .92rem;
+      font-weight: 700;
+      margin-bottom: 28px;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(320px, .78fr);
+      gap: 56px;
+      align-items: center;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      color: var(--accent-dark);
+      font-size: .84rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(2.3rem, 5.2vw, 5rem);
+      line-height: 1.06;
+      font-weight: 800;
+    }
+    .hero-copy {
+      margin: 22px 0 0;
+      max-width: 620px;
+      color: #334155;
+      font-size: 1.08rem;
+      font-weight: 500;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 800;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      color: #fff;
+      background: var(--accent);
+      box-shadow: 0 10px 24px rgba(22, 163, 74, .22);
+    }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-secondary {
+      color: var(--ink);
+      border-color: var(--line);
+      background: #fff;
+    }
+    .hero-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .phone-stage {
+      position: relative;
+      min-height: 560px;
+    }
+    .phone-card {
+      position: absolute;
+      width: min(290px, 68vw);
+      border-radius: 30px;
+      padding: 10px;
+      background: #0b1220;
+      box-shadow: var(--shadow);
+    }
+    .phone-card img {
+      border-radius: 22px;
+      aspect-ratio: 1290 / 2796;
+      object-fit: cover;
+      background: #111;
+    }
+    .phone-main {
+      right: 40px;
+      top: 0;
+      z-index: 3;
+    }
+    .phone-side {
+      left: 0;
+      top: 82px;
+      z-index: 2;
+      transform: scale(.86);
+      opacity: .95;
+    }
+    .phone-small {
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      transform: scale(.72);
+      opacity: .88;
+    }
+
+    .stats {
+      padding: 18px 0 54px;
+      background: #fff;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .stat {
+      padding: 22px 20px;
+      border-right: 1px solid var(--line);
+    }
+    .stat:last-child { border-right: 0; }
+    .stat strong {
+      display: block;
+      font-family: Inter, sans-serif;
+      font-size: 1.45rem;
+      line-height: 1.2;
+    }
+    .stat span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 700;
+    }
+
+    section { padding: 76px 0; }
+    .section-label {
+      margin: 0 0 8px;
+      color: var(--accent-dark);
+      font-weight: 800;
+      font-size: .84rem;
+      text-transform: uppercase;
+    }
+    .section-heading {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 3rem);
+      line-height: 1.18;
+      font-weight: 800;
+    }
+    .section-lead {
+      margin: 16px 0 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .feature-band { background: var(--surface); }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 34px;
+    }
+    .feature {
+      min-height: 238px;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .feature-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--brand);
+      font-family: Inter, sans-serif;
+      font-size: .88rem;
+      font-weight: 800;
+    }
+    .feature h3 {
+      margin: 18px 0 10px;
+      font-size: 1.18rem;
+      line-height: 1.35;
+    }
+    .feature p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .94rem;
+    }
+
+    .use-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .92fr) minmax(320px, 1.08fr);
+      gap: 44px;
+      align-items: start;
+    }
+    .use-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .use-list li {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: #334155;
+      font-weight: 700;
+    }
+    .check {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--accent);
+      font-size: .78rem;
+      font-weight: 800;
+    }
+    .wide-shot {
+      overflow: hidden;
+      border-radius: 8px;
+      background: #0b1220;
+      box-shadow: var(--shadow);
+    }
+    .wide-shot img {
+      width: 100%;
+      aspect-ratio: 1290 / 2796;
+      max-height: 620px;
+      object-fit: cover;
+      object-position: top;
+    }
+
+    .process { background: var(--brand); color: #fff; }
+    .process .section-label { color: #86efac; }
+    .process .section-lead { color: rgba(255,255,255,.72); }
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      margin-top: 36px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .process-step {
+      min-height: 190px;
+      padding: 24px;
+      background: var(--brand);
+    }
+    .process-step strong {
+      display: block;
+      color: #86efac;
+      font-family: Inter, sans-serif;
+      font-size: 1.3rem;
+    }
+    .process-step h3 {
+      margin: 12px 0 8px;
+      font-size: 1.05rem;
+    }
+    .process-step p {
+      margin: 0;
+      color: rgba(255,255,255,.7);
+      font-size: .9rem;
+    }
+
+    .cta {
+      padding: 72px 0;
+      background: #ecfdf5;
+    }
+    .cta-box {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: center;
+      padding: 36px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid #bbf7d0;
+      box-shadow: 0 16px 48px rgba(15, 23, 42, .08);
+    }
+    .cta h2 {
+      margin: 0;
+      font-size: clamp(1.6rem, 2.6vw, 2.5rem);
+      line-height: 1.25;
+    }
+    .cta p {
+      margin: 10px 0 0;
+      color: var(--muted);
+    }
+
+    .site-footer {
+      padding: 42px 0;
+      color: rgba(255,255,255,.72);
+      background: #0b1220;
+    }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 28px;
+      align-items: flex-start;
+    }
+    .footer-logo {
+      display: block;
+      color: #fff;
+      font-family: Inter, sans-serif;
+      font-weight: 800;
+      letter-spacing: .04em;
+      margin-bottom: 10px;
+    }
+    .footer-nav {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      font-weight: 700;
+      font-size: .92rem;
+    }
+    .footer-copy {
+      margin: 26px 0 0;
+      color: rgba(255,255,255,.5);
+      font-size: .86rem;
+    }
+
+    @media (max-width: 900px) {
+      .primary-nav { display: none; }
+      .hero-grid, .use-grid, .cta-box { grid-template-columns: 1fr; }
+      .phone-stage { min-height: 480px; }
+      .phone-main { right: 8%; }
+      .phone-side { left: 4%; }
+      .phone-small { display: none; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat:nth-child(2) { border-right: 0; }
+      .stat:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .feature-grid, .process-grid { grid-template-columns: 1fr; }
+      .process-grid { gap: 0; }
+    }
+
+    @media (max-width: 560px) {
+      .container { width: min(100% - 24px, 1120px); }
+      .hero { padding: 38px 0 24px; }
+      section { padding: 54px 0; }
+      .header-inner { height: 64px; }
+      .hero-actions { flex-direction: column; }
+      .btn { width: 100%; }
+      .phone-stage { min-height: 400px; }
+      .phone-card { width: 210px; border-radius: 24px; padding: 8px; }
+      .phone-card img { border-radius: 17px; }
+      .phone-main { right: 2%; }
+      .phone-side { left: -2%; top: 74px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .stat, .stat:nth-child(2) { border-right: 0; border-bottom: 1px solid var(--line); }
+      .stat:last-child { border-bottom: 0; }
+      .feature { min-height: auto; padding: 22px; }
+      .cta-box { padding: 24px; }
+      .footer-inner { flex-direction: column; }
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "クルーン検証アプリ",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "iOS",
+    "description": "パチンコのクルーン皿を再現した3D物理シミュレーター。穴の大きさ、穴の距離、皿の形、玉の大きさ、摩擦、反発などを調整して玉の挙動を確認できます。",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "JPY"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "株式会社バンテックス",
+      "url": "https://bantex.jp/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="header-inner">
+        <a class="site-logo" href="https://bantex.jp/">BANTEX</a>
+        <nav class="primary-nav" aria-label="メインナビゲーション">
+          <ul>
+            <li><a href="https://bantex.jp/#services">事業内容</a></li>
+            <li><a href="https://bantex.jp/ai-services.html">AIサービス</a></li>
+            <li><a href="https://bantex.jp/#about">会社概要</a></li>
+            <li><a href="https://bantex.jp/#contact">お問い合わせ</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <a class="back-link" href="https://bantex.jp/ai-services.html">← AIサービス一覧へ戻る</a>
+        <div class="hero-grid">
+          <div>
+            <p class="eyebrow">iPhone App / 3D Physics Simulator</p>
+            <h1>クルーン検証アプリ</h1>
+            <p class="hero-copy">玉が皿の上を転がり、穴へ吸い込まれていくクルーンの動きを3Dで観察できる検証用アプリです。穴の配置、皿の形、摩擦、反発などを変えながら、玉の挙動を視覚的に確認できます。</p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="https://bantex.jp/#contact">開発相談をする</a>
+              <a class="btn btn-secondary" href="#features">機能を見る</a>
+            </div>
+            <p class="hero-note">App Store 申請中 / iPhone向け / ログイン不要 / データ収集なし</p>
+          </div>
+          <div class="phone-stage" aria-label="アプリ画面">
+            <div class="phone-card phone-side">
+              <img src="kuroon-lab-assets/02-balls.png" alt="複数の玉がクルーン皿を転がる画面">
+            </div>
+            <div class="phone-card phone-main">
+              <img src="kuroon-lab-assets/01-home.png" alt="クルーン検証アプリのメイン画面">
+            </div>
+            <div class="phone-card phone-small">
+              <img src="kuroon-lab-assets/03-menu.png" alt="クルーン検証アプリの設定メニュー画面">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats">
+      <div class="container">
+        <div class="stats-grid" aria-label="アプリ概要">
+          <div class="stat"><strong>3D</strong><span>RealityKitによる立体表示</span></div>
+          <div class="stat"><strong>3種類</strong><span>中心のみ / 3穴 / 中心＋3穴</span></div>
+          <div class="stat"><strong>調整可</strong><span>皿・穴・玉の物理条件</span></div>
+          <div class="stat"><strong>無料</strong><span>ログイン不要・広告なし</span></div>
+        </div>
+      </div>
+    </div>
+
+    <section class="feature-band" id="features">
+      <div class="container">
+        <p class="section-label">Features</p>
+        <h2 class="section-heading">見た目と物理を同時に確認できる検証ツール</h2>
+        <p class="section-lead">クルーン皿の形状や穴の配置を変えたとき、玉がどのように周回し、どこで落ちるかを観察するためのシンプルなアプリです。</p>
+        <div class="feature-grid">
+          <article class="feature">
+            <span class="feature-num">01</span>
+            <h3>クルーン皿を3Dで再現</h3>
+            <p>じょうご型の皿、黒い穴、玉の動きをiPhone画面上に3D表示。ドラッグでカメラ角度を変えながら確認できます。</p>
+          </article>
+          <article class="feature">
+            <span class="feature-num">02</span>
+            <h3>穴パターンを切り替え</h3>
+            <p>中心のみ、3穴、中心＋3穴の3種類に対応。穴の大きさや距離も調整でき、違いを比較しやすくしています。</p>
+          </article>
+          <article class="feature">
+            <span class="feature-num">03</span>
+            <h3>物理パラメータを調整</h3>
+            <p>皿の深さ、形、摩擦、反発、玉の大きさ、空気抵抗などを変更し、玉の走り方の変化を確認できます。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="use-grid">
+          <div>
+            <p class="section-label">Use Case</p>
+            <h2 class="section-heading">クルーンの挙動確認を、手元で素早く</h2>
+            <p class="section-lead">複雑な操作を省き、画面上には投入ボタンとメニューだけを配置。設定を変え、玉を投入し、動きを見る流れに集中できます。</p>
+            <ul class="use-list" style="margin-top:28px;">
+              <li><span class="check">✓</span><span>穴の直径や配置を変えた時の玉の入り方を見たい</span></li>
+              <li><span class="check">✓</span><span>皿の深さや形状による周回の違いを確認したい</span></li>
+              <li><span class="check">✓</span><span>開発前のイメージ共有や検証用デモとして見せたい</span></li>
+              <li><span class="check">✓</span><span>iPhoneだけで簡単に動きを確認できるツールが欲しい</span></li>
+            </ul>
+          </div>
+          <div class="wide-shot">
+            <img src="kuroon-lab-assets/03-menu.png" alt="皿や玉の細かな設定を変更できるメニュー画面">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="process">
+      <div class="container">
+        <p class="section-label">How It Works</p>
+        <h2 class="section-heading">設定して、投入して、観察する</h2>
+        <p class="section-lead">検証の流れはシンプルです。条件を変えながら繰り返し確認できます。</p>
+        <div class="process-grid">
+          <article class="process-step">
+            <strong>01</strong>
+            <h3>穴パターンを選ぶ</h3>
+            <p>中心のみ、3穴、中心＋3穴から選択します。</p>
+          </article>
+          <article class="process-step">
+            <strong>02</strong>
+            <h3>皿と玉を調整</h3>
+            <p>深さ、摩擦、反発、穴の大きさなどを変更します。</p>
+          </article>
+          <article class="process-step">
+            <strong>03</strong>
+            <h3>玉を投入</h3>
+            <p>投入ボタンを押して、玉の走り出しを確認します。</p>
+          </article>
+          <article class="process-step">
+            <strong>04</strong>
+            <h3>動きを観察</h3>
+            <p>周回、減速、穴への入り方を3D画面で見ます。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container">
+        <div class="cta-box">
+          <div>
+            <h2>検証用アプリや業務用ツールの開発も相談できます</h2>
+            <p>クルーン検証アプリのような、現場の検証・説明・デモに使える小さなアプリ開発にも対応します。</p>
+          </div>
+          <a class="btn btn-primary" href="https://bantex.jp/#contact">お問い合わせ</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <span class="footer-logo">BANTEX</span>
+          <div>〒468-0015<br>愛知県名古屋市天白区原3丁目304番1号T&amp;Lビル2A<br>TEL: 052-847-7501</div>
+        </div>
+        <nav class="footer-nav" aria-label="フッターナビゲーション">
+          <a href="https://bantex.jp/">トップ</a>
+          <a href="https://bantex.jp/ai-services.html">AIサービス</a>
+          <a href="https://bantex.jp/privacy.html">プライバシーポリシー</a>
+          <a href="https://bantex.jp/tokushoho.html">特定商取引法に基づく表記</a>
+        </nav>
+      </div>
+      <p class="footer-copy">&copy; 2026 株式会社バンテックス | All Rights Reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>
